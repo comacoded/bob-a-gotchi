@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bob-a-gotchi — background options</title>
+<link rel="icon" href="favicon.ico" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0c0e12; color: #e8ecf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 30px 18px 60px; }
+  h1.title { font-size: 22px; margin: 0 0 4px; }
+  p.note { color: #969eae; margin: 0 0 18px; }
+  .label { font-family: "Press Start 2P", monospace; font-size: 11px; color: #8fa4ff; margin: 30px 0 10px; }
+
+  .banner { position: relative; margin: 0; line-height: 0;
+    border: 1px solid #262b36; border-radius: 16px; overflow: hidden; }
+  .b-land { display: block; width: 100%; height: auto; image-rendering: pixelated; }
+
+  .b-sign { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.4; }
+  .b-sign .posts { position: absolute; left: 0; right: 0; top: -16px; height: 16px; }
+  .b-sign .posts::before, .b-sign .posts::after { content: ""; position: absolute; top: 0; width: 2px; height: 16px; background: #2a3154; }
+  .b-sign .posts::before { left: 28px; } .b-sign .posts::after { right: 28px; }
+  .b-sign .panel { background: linear-gradient(180deg, rgba(13,18,40,.92), rgba(8,11,28,.92));
+    border: 2px solid #5d7bff; border-radius: 12px;
+    box-shadow: 0 6px 0 rgba(0,0,0,.4), 0 0 24px rgba(93,123,255,.35); padding: 12px 22px 14px; }
+  .wordmark { font-family: "Press Start 2P", monospace; font-size: 24px; line-height: 1.25; margin: 0;
+    background: linear-gradient(90deg, #8fa4ff, #c4a8ff); -webkit-background-clip: text; background-clip: text;
+    color: transparent; text-shadow: 0 2px 0 rgba(0,0,0,.5); }
+  .sign-sub { font-family: "Press Start 2P", monospace; font-size: 7.5px; letter-spacing: 1px; color: #aeb8e6; margin: 9px 0 0; }
+  .bolt { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #aab6e8; }
+  .bolt.tl{top:6px;left:6px}.bolt.tr{top:6px;right:6px}.bolt.bl{bottom:6px;left:6px}.bolt.br{bottom:6px;right:6px}
+  .b-bob { position: absolute; left: 6%; bottom: 5%; width: 12%; max-width: 104px; height: auto; image-rendering: pixelated; }
+
+  @media (max-width: 640px) { .wordmark { font-size: 16px; } .sign-sub { font-size: 6px; } .b-sign { top: 8px; } }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Bob-a-gotchi — background options</h1>
+    <p class="note">Same header, five different pixel illustrations. Tell me which backdrop you want (and I can tweak any of them).</p>
+
+    <div class="label">1 · Night build site (current)</div>
+    <div class="banner"><img class="b-land" src="img/bg-night.png" alt="">
+      <div class="b-sign"><div class="posts"></div><div class="panel"><span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span><h2 class="wordmark">Bob-a-gotchi</h2><p class="sign-sub">A PIXEL BUILD BUDDY</p></div></div>
+      <img class="b-bob bob" src="img/bob-idle-0.png" alt=""></div>
+
+    <div class="label">2 · Sunset / golden hour</div>
+    <div class="banner"><img class="b-land" src="img/bg-sunset.png" alt="">
+      <div class="b-sign"><div class="posts"></div><div class="panel"><span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span><h2 class="wordmark">Bob-a-gotchi</h2><p class="sign-sub">A PIXEL BUILD BUDDY</p></div></div>
+      <img class="b-bob bob" src="img/bob-idle-0.png" alt=""></div>
+
+    <div class="label">3 · Sunny day skyline</div>
+    <div class="banner"><img class="b-land" src="img/bg-day.png" alt="">
+      <div class="b-sign"><div class="posts"></div><div class="panel"><span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span><h2 class="wordmark">Bob-a-gotchi</h2><p class="sign-sub">A PIXEL BUILD BUDDY</p></div></div>
+      <img class="b-bob bob" src="img/bob-idle-0.png" alt=""></div>
+
+    <div class="label">4 · Cozy lo-fi rooftop</div>
+    <div class="banner"><img class="b-land" src="img/bg-lofi.png" alt="">
+      <div class="b-sign"><div class="posts"></div><div class="panel"><span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span><h2 class="wordmark">Bob-a-gotchi</h2><p class="sign-sub">A PIXEL BUILD BUDDY</p></div></div>
+      <img class="b-bob bob" src="img/bob-idle-0.png" alt=""></div>
+
+    <div class="label">5 · Mountain dawn</div>
+    <div class="banner"><img class="b-land" src="img/bg-dawn.png" alt="">
+      <div class="b-sign"><div class="posts"></div><div class="panel"><span class="bolt tl"></span><span class="bolt tr"></span><span class="bolt bl"></span><span class="bolt br"></span><h2 class="wordmark">Bob-a-gotchi</h2><p class="sign-sub">A PIXEL BUILD BUDDY</p></div></div>
+      <img class="b-bob bob" src="img/bob-idle-0.png" alt=""></div>
+  </div>
+
+<script>
+  var idle = [0,1,2,3,4].map(function(i){ var im=new Image(); im.src="img/bob-idle-"+i+".png"; return im; });
+  var els = Array.prototype.slice.call(document.querySelectorAll(".bob")), f=0;
+  setInterval(function(){ f=(f+1)%idle.length; els.forEach(function(e){ e.src=idle[f].src; }); }, 220);
+</script>
+</body>
+</html>
