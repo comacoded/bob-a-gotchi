@@ -41,6 +41,14 @@
   }
   .b-land { display: block; width: 100%; height: auto; }
 
+  /* plain-text title overlaid on the banner */
+  .b-title { position: absolute; top: 18px; left: 0; right: 0; text-align: center; z-index: 2; pointer-events: none; line-height: 1.1; }
+  .b-title h1 {
+    margin: 0; font-weight: 800; letter-spacing: .5px;
+    font-size: clamp(30px, 6.4vw, 52px); color: #fff4e8;
+    text-shadow: 0 2px 18px rgba(0,0,0,.5), 0 2px 3px rgba(0,0,0,.75);
+  }
+
   /* hanging sign with the wordmark */
   .b-sign { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.4; }
   .b-sign .posts { position: absolute; left: 0; right: 0; top: -16px; height: 16px; }
@@ -122,7 +130,8 @@
 
     <!-- ====== Banner ====== -->
     <div class="banner">
-      <img class="b-land" src="img/banner.png" alt="Bob-a-gotchi — Bob on a rafter at sunset, sign hanging from a crane" />
+      <img class="b-land" src="img/banner.png" alt="Bob on a rafter at sunset on a construction site" />
+      <div class="b-title"><h1>Bob-a-gotchi</h1></div>
     </div>
 
     <div class="intro">
