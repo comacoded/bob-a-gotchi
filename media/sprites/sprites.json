@@ -1,0 +1,13 @@
+{
+  "scale": 3,
+  "animations": {
+    "idle":      { "dir": "idle",      "frames": 5, "fps": 5 },
+    "building":  { "dir": "building",  "frames": 9, "fps": 9 },
+    "waking":    { "dir": "waking",    "frames": 7, "fps": 6 },
+    "hungry":    { "dir": "hungry",    "frames": 7, "fps": 5 },
+    "fed":       { "dir": "eating",    "frames": 9, "fps": 7 },
+    "celebrate": { "dir": "celebrate", "frames": 9, "fps": 11 },
+    "sleeping":  { "dir": "sleeping",  "frames": 1, "fps": 1, "scale": 2.1 },
+    "gone":      { "dir": "idle",      "frames": 1, "fps": 1 }
+  }
+}

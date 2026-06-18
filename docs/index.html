@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bob-a-gotchi — a pixel build buddy for your editor</title>
+<meta name="description" content="Bob-a-gotchi is a pixel-art robot companion that lives in your editor sidebar — codes along while you type, cheers your AI's big commits, gets hungry, and naps when you idle." />
+<link rel="icon" href="favicon.ico" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #141b30;
+    --panel2: #1b2440;
+    --line: #2a3354;
+    --text: #e8ecf8;
+    --muted: #9aa6c8;
+    --blue: #4f6bff;
+    --blue2: #6246c8;
+    --green: #5ee06b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      radial-gradient(1200px 500px at 50% -10%, #18213f 0%, rgba(24,33,63,0) 60%),
+      var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+  img { image-rendering: pixelated; }
+
+  /* ---- Hero banner ---- */
+  .hero { text-align: center; padding: 56px 0 28px; }
+  .banner {
+    display: inline-flex; align-items: center; gap: 22px;
+    background: linear-gradient(180deg, #182142, #0e1430);
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 22px 30px;
+  }
+  .banner img { width: 84px; height: 84px; }
+  .wordmark {
+    font-family: "Press Start 2P", monospace;
+    font-size: 30px; line-height: 1.3; margin: 0;
+    background: linear-gradient(90deg, #5d7bff, #9a7bff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.35);
+  }
+  .tagline { color: var(--muted); font-size: 18px; margin: 22px auto 0; max-width: 620px; }
+  .pills { margin-top: 18px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  .pill {
+    font-size: 13px; color: var(--muted); background: var(--panel);
+    border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px;
+  }
+
+  /* ---- Quick start ---- */
+  section { padding: 22px 0; }
+  h2 {
+    font-family: "Press Start 2P", monospace; font-size: 15px;
+    color: var(--text); letter-spacing: 0.5px; margin: 0 0 14px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: 14px; padding: 22px;
+  }
+  .lead { color: var(--muted); margin: 0 0 16px; }
+  .cmd {
+    display: flex; align-items: center; gap: 12px;
+    background: #0a0f1f; border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 14px 14px 16px;
+  }
+  .cmd code {
+    flex: 1; font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 13.5px; color: #cdd6f4; overflow-x: auto; white-space: nowrap;
+  }
+  .cmd code .tok { color: var(--green); }
+  .copy {
+    flex: none; display: inline-flex; align-items: center; gap: 6px;
+    background: var(--blue); color: #fff; border: none; border-radius: 8px;
+    padding: 8px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .copy:hover { background: #5f79ff; }
+  .copy.copied { background: var(--green); color: #0b1020; }
+  .hint { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
+  details { margin-top: 14px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
+  details code { color: #cdd6f4; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+
+  /* ---- Features ---- */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  .feat { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; }
+  .feat img { width: 56px; height: 56px; flex: none; }
+  .feat h3 { margin: 2px 0 4px; font-size: 16px; }
+  .feat p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  footer { color: var(--muted); font-size: 14px; text-align: center; padding: 30px 0 50px; border-top: 1px solid var(--line); margin-top: 24px; }
+  footer a { color: #9fb0ff; text-decoration: none; }
+  @media (max-width: 620px) {
+    .banner { flex-direction: column; gap: 14px; padding: 20px; }
+    .wordmark { font-size: 22px; }
+    .grid { grid-template-columns: 1fr; }
+    .cmd { flex-direction: column; align-items: stretch; }
+    .cmd code { white-space: pre-wrap; word-break: break-all; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="hero">
+      <div class="banner">
+        <img id="bob" src="img/bob-idle-0.png" alt="Bob the pixel robot" />
+        <h1 class="wordmark">Bob-a-gotchi</h1>
+      </div>
+      <p class="tagline">A pixel-art build buddy that lives in your editor. He codes along while you type, cheers when your AI ships a big block, gets hungry, tells dad jokes, and naps when you idle.</p>
+      <div class="pills">
+        <span class="pill">IBM Bob</span>
+        <span class="pill">VS Code</span>
+        <span class="pill">Cursor</span>
+        <span class="pill">VSCodium</span>
+      </div>
+    </header>
+
+    <section id="quick-start">
+      <h2>Quick Start</h2>
+      <div class="card">
+        <p class="lead">Install Bob into your editor with one command — no Marketplace, no account.</p>
+        <div class="cmd">
+          <code id="cmd"><span class="tok">curl</span> -fsSL https://raw.githubusercontent.com/comacoded/bob-a-gotchi/main/install.sh | bash</code>
+          <button class="copy" id="copy" aria-label="Copy install command">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span id="copy-label">Copy</span>
+          </button>
+        </div>
+        <p class="hint">Then reload your editor window and click the hard-hat icon in the activity bar to meet Bob.</p>
+        <details>
+          <summary>Prefer to install by hand?</summary>
+          <p class="hint">Grab the <code>.vsix</code> from the <a href="https://github.com/comacoded/bob-a-gotchi/releases/latest" style="color:#9fb0ff">latest release</a>, then run<br>
+          <code>code --install-extension ibm-bob-tamagotchi.vsix --force</code></p>
+        </details>
+      </div>
+    </section>
+
+    <section>
+      <h2>What Bob does</h2>
+      <div class="grid">
+        <div class="feat"><img src="img/bob-building.png" alt=""><div><h3>Builds while you code</h3><p>Bob lays bricks as you type. When a big block lands, confetti + "wow great block!"</p></div></div>
+        <div class="feat"><img src="img/bob-hungry.png" alt=""><div><h3>Gets hungry</h3><p>He rubs his tummy and a burger button appears. Feed him and he munches: "mmm tasty."</p></div></div>
+        <div class="feat"><img src="img/bob-sleeping.png" alt=""><div><h3>Naps when you idle</h3><p>Step away and Bob tucks into bed under the moon, breathing softly with a little zzz.</p></div></div>
+        <div class="feat"><img src="img/bob-celebrate.png" alt=""><div><h3>Tells dad jokes</h3><p>While idling he drops programming dad jokes. "I named a bug 'Steve'. We've been together for weeks."</p></div></div>
+      </div>
+    </section>
+
+    <footer>
+      <p>Built by Nick Coma · pixel art via <a href="https://pixellab.ai">PixelLab</a> · <a href="https://github.com/comacoded/bob-a-gotchi">GitHub</a> · MIT</p>
+    </footer>
+
+  </div>
+
+<script>
+  // Animate Bob in the banner by cycling his idle frames.
+  (function () {
+    var frames = [0,1,2,3,4].map(function (i) {
+      var im = new Image(); im.src = "img/bob-idle-" + i + ".png"; return im;
+    });
+    var el = document.getElementById("bob"), f = 0;
+    setInterval(function () { f = (f + 1) % frames.length; el.src = frames[f].src; }, 220);
+  })();
+
+  // Copy the install command.
+  (function () {
+    var btn = document.getElementById("copy"),
+        label = document.getElementById("copy-label"),
+        cmd = document.getElementById("cmd").innerText;
+    btn.addEventListener("click", function () {
+      navigator.clipboard.writeText(cmd).then(function () {
+        btn.classList.add("copied"); label.textContent = "Copied!";
+        setTimeout(function () { btn.classList.remove("copied"); label.textContent = "Copy"; }, 1600);
+      });
+    });
+  })();
+</script>
+</body>
+</html>

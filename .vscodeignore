@@ -1,0 +1,15 @@
+.vscode/**
+src/**
+scripts/**
+docs/**
+install.sh
+*.vsix
+media/bob-logo.png
+media/sprites/south.png
+node_modules/**
+esbuild.js
+tsconfig.json
+.gitignore
+**/*.map
+**/.DS_Store
+.git/**

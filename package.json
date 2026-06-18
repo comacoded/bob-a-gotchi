@@ -1,0 +1,116 @@
+{
+  "name": "ibm-bob-tamagotchi",
+  "displayName": "Bob-a-gotchi",
+  "description": "A pixel-art robot companion who lives in your sidebar, codes along while you type, cheers when your AI ships a big block of code, gets hungry, and naps when you go idle.",
+  "version": "0.3.0",
+  "publisher": "nickcoma",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "tamagotchi",
+    "pet",
+    "companion",
+    "pixel art",
+    "fun",
+    "robot",
+    "motivation"
+  ],
+  "galleryBanner": {
+    "color": "#0f1729",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/comacoded/bob-a-gotchi"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bob-buddy",
+          "title": "Bob",
+          "icon": "media/activity-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "bob-buddy": [
+        {
+          "type": "webview",
+          "id": "bob.petView",
+          "name": "Build Buddy"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "bob.feed",
+        "title": "Bob: Feed Bob",
+        "category": "Bob"
+      },
+      {
+        "command": "bob.wake",
+        "title": "Bob: Wake Bob Up",
+        "category": "Bob"
+      },
+      {
+        "command": "bob.reset",
+        "title": "Bob: Reset Bob (new robot)",
+        "category": "Bob"
+      }
+    ],
+    "configuration": {
+      "title": "Bob the Build Buddy",
+      "properties": {
+        "bob.idleSleepMinutes": {
+          "type": "number",
+          "default": 4,
+          "minimum": 1,
+          "markdownDescription": "Minutes of no coding activity before Bob falls asleep."
+        },
+        "bob.aiBlockLineThreshold": {
+          "type": "number",
+          "default": 12,
+          "minimum": 3,
+          "markdownDescription": "A single edit that inserts at least this many lines is treated as an AI/code-gen block and triggers Bob's celebration."
+        },
+        "bob.permadeath": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "When enabled, neglecting Bob (letting his stats hit zero) makes him leave for good. Disabled means he only gets sad and always recovers."
+        },
+        "bob.statDecayMinutes": {
+          "type": "number",
+          "default": 30,
+          "minimum": 5,
+          "markdownDescription": "How many minutes it takes for hunger/energy to drop one notch while idle."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.js --production",
+    "watch": "node esbuild.js --watch",
+    "compile": "node esbuild.js",
+    "package": "vsce package",
+    "lint": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.0",
+    "typescript": "^5.4.0",
+    "@vscode/vsce": "^2.24.0"
+  }
+}
