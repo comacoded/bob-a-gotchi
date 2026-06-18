@@ -122,17 +122,7 @@
 
     <!-- ====== Banner ====== -->
     <div class="banner">
-      <img class="b-land" src="img/landscape.png" alt="A pixel-art night construction site" />
-      <div class="b-sign">
-        <div class="posts"></div>
-        <div class="panel">
-          <span class="bolt tl"></span><span class="bolt tr"></span>
-          <span class="bolt bl"></span><span class="bolt br"></span>
-          <h1 class="wordmark">Bob-a-gotchi</h1>
-          <p class="sign-sub">A PIXEL BUILD BUDDY</p>
-        </div>
-      </div>
-      <img class="b-bob" id="bob" src="img/bob-idle-0.png" alt="Bob the pixel robot" />
+      <img class="b-land" src="img/banner.png" alt="Bob-a-gotchi — Bob on a rafter at sunset, sign hanging from a crane" />
     </div>
 
     <div class="intro">
@@ -187,12 +177,6 @@
   </div>
 
 <script>
-  // Animate Bob by cycling his idle frames.
-  (function () {
-    var frames = [0,1,2,3,4].map(function (i) { var im = new Image(); im.src = "img/bob-idle-" + i + ".png"; return im; });
-    var el = document.getElementById("bob"), f = 0;
-    setInterval(function () { f = (f + 1) % frames.length; el.src = frames[f].src; }, 220);
-  })();
   // Copy the install command (without the leading $ prompt).
   (function () {
     var btn = document.getElementById("copy"), label = document.getElementById("copy-label");
