@@ -3,6 +3,8 @@ src/**
 scripts/**
 docs/**
 install.sh
+Dockerfile
+.bannercfg.json
 *.vsix
 media/bob-logo.png
 media/sprites/south.png
