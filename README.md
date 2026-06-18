@@ -80,7 +80,7 @@ npm run package   # produce an installable .vsix via vsce
 
 ## Credits
 
-Bob's pixel art was generated with [PixelLab](https://pixellab.ai). Built by Nick Coma.
+Built by Nick Coma.
 
 ## License
 
