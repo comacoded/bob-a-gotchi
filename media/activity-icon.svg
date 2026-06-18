@@ -1,10 +1,19 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- hard hat -->
-  <path d="M5 9c0-3.6 3.1-6 7-6s7 2.4 7 6H5z" fill="currentColor"/>
-  <rect x="3" y="9" width="18" height="2" rx="1" fill="currentColor"/>
-  <!-- head -->
-  <rect x="6" y="11.5" width="12" height="9" rx="3" fill="currentColor"/>
-  <!-- eyes (cut out) -->
-  <circle cx="9.5" cy="15.5" r="1.4" fill="var(--vscode-activityBar-background, #1e1e1e)"/>
-  <circle cx="14.5" cy="15.5" r="1.4" fill="var(--vscode-activityBar-background, #1e1e1e)"/>
+<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <mask id="bob" maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+    <rect width="24" height="24" fill="#000"/>
+    <!-- hard hat dome + brim -->
+    <path d="M5 9 C5 4 8.2 2.4 12 2.4 C15.8 2.4 19 4 19 9 Z" fill="#fff"/>
+    <rect x="3" y="8" width="18" height="2.3" rx="1.15" fill="#fff"/>
+    <!-- head -->
+    <rect x="6" y="10" width="12" height="10.4" rx="3.2" fill="#fff"/>
+    <!-- ears -->
+    <rect x="4.1" y="13" width="2.1" height="3.4" rx="1.05" fill="#fff"/>
+    <rect x="17.8" y="13" width="2.1" height="3.4" rx="1.05" fill="#fff"/>
+    <!-- eyes (cut out) -->
+    <circle cx="9.5" cy="14" r="1.45" fill="#000"/>
+    <circle cx="14.5" cy="14" r="1.45" fill="#000"/>
+    <!-- smile (cut out) -->
+    <path d="M9.2 16.6 Q12 18.7 14.8 16.6" stroke="#000" stroke-width="1.35" fill="none" stroke-linecap="round"/>
+  </mask>
+  <rect width="24" height="24" fill="#C5C5C5" mask="url(#bob)"/>
 </svg>

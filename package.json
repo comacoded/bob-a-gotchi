@@ -2,7 +2,7 @@
   "name": "ibm-bob-tamagotchi",
   "displayName": "Bob-a-gotchi",
   "description": "A pixel-art robot companion who lives in your sidebar, codes along while you type, cheers when your AI ships a big block of code, gets hungry, and naps when you go idle.",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publisher": "nickcoma",
   "license": "MIT",
   "icon": "media/icon.png",
