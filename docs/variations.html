@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bob-a-gotchi — header variations</title>
+<link rel="icon" href="favicon.ico" />
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0c0e12; color: #e8ecf3;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 30px 18px 60px; }
+  h1.title { font-size: 22px; margin: 0 0 4px; }
+  p.note { color: #969eae; margin: 0 0 26px; }
+  .label { font-family: "Press Start 2P", monospace; font-size: 11px; color: #8fa4ff; margin: 30px 0 10px; }
+
+  /* ---- shared banner ---- */
+  .banner { position: relative; width: 100%; height: 300px; border: 1px solid #262b36;
+    border-radius: 16px; overflow: hidden; }
+  .land { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; }
+  .shade { position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(7,9,16,.62) 0%, rgba(7,9,16,0) 42%, rgba(7,9,16,.5) 100%); }
+  img.bob { image-rendering: pixelated; }
+
+  /* ---- chunky game logos ---- */
+  .logo { font-family: "Press Start 2P", monospace; margin: 0; line-height: 1.15; letter-spacing: 1px; }
+  .logo .d { opacity: .9; }
+  .logo-yellow { color: #ffd23e; }
+  .logo-yellow .d { color: #ff9d3e; }
+  .logo-yellow {
+    text-shadow:
+      2px 0 #15101f, -2px 0 #15101f, 0 2px #15101f, 0 -2px #15101f,
+      2px 2px #15101f, -2px 2px #15101f, 2px -2px #15101f, -2px -2px #15101f,
+      0 4px #c8941a, 0 6px #c8941a, 0 8px #8c6610, 0 11px 12px rgba(0,0,0,.6);
+  }
+  .logo-blue { color: #8fb0ff; }
+  .logo-blue .d { color: #c4a8ff; }
+  .logo-blue {
+    text-shadow:
+      2px 0 #11132b, -2px 0 #11132b, 0 2px #11132b, 0 -2px #11132b,
+      2px 2px #11132b, -2px 2px #11132b, 2px -2px #11132b, -2px -2px #11132b,
+      0 4px #3a4fb0, 0 6px #3a4fb0, 0 8px #25307a, 0 11px 12px rgba(0,0,0,.6);
+  }
+
+  /* ===== Variation A: HERO ===== */
+  .vA .logo { position: absolute; top: 20px; left: 0; right: 0; text-align: center; font-size: 30px; z-index: 3; }
+  .vA .hero { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+    height: 76%; width: auto; z-index: 2; filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
+
+  /* ===== Variation B: ROSTER ===== */
+  .vB .logo { position: absolute; top: 18px; left: 0; right: 0; text-align: center; font-size: 26px; z-index: 3; }
+  .vB .star { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+    height: 52%; z-index: 2; filter: drop-shadow(0 5px 5px rgba(0,0,0,.5)); }
+  .vB .roster { position: absolute; bottom: 10px; left: 0; right: 0; display: flex;
+    justify-content: space-between; padding: 0 16px; z-index: 1; }
+  .vB .roster img { height: 78px; opacity: .96; filter: drop-shadow(0 4px 4px rgba(0,0,0,.5)); }
+
+  /* ===== Variation C: SPLIT ===== */
+  .vC .left { position: absolute; top: 0; bottom: 0; left: 0; width: 58%; padding: 30px 26px;
+    display: flex; flex-direction: column; justify-content: center; z-index: 3; }
+  .vC .left .logo { font-size: 24px; }
+  .vC .tag { color: #c7cee0; font-size: 14px; margin: 16px 0 0; max-width: 300px; line-height: 1.5;
+    text-shadow: 0 1px 4px rgba(0,0,0,.8); }
+  .vC .cmd { margin-top: 16px; font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    background: rgba(7,9,13,.75); border: 1px solid #2a3154; border-radius: 8px; padding: 8px 11px; color: #cdd6f4; max-width: 320px; }
+  .vC .cmd .g { color: #5ee06b; }
+  .vC .hero { position: absolute; right: 2%; bottom: -4px; height: 92%; z-index: 2;
+    filter: drop-shadow(0 6px 6px rgba(0,0,0,.5)); }
+  .vC .shade { background: linear-gradient(90deg, rgba(7,9,16,.78) 0%, rgba(7,9,16,.2) 55%, rgba(7,9,16,0) 80%); }
+
+  @media (max-width: 620px) {
+    .banner { height: 240px; }
+    .vA .logo, .vB .logo { font-size: 18px; }
+    .vC .left .logo { font-size: 16px; } .vC .tag, .vC .cmd { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 class="title">Bob-a-gotchi — header variations</h1>
+    <p class="note">Three takes on a capsule-style header. Tell me which one (or mix & match) and I'll drop it into the site.</p>
+
+    <!-- A: HERO -->
+    <div class="label">A · Hero — big logo + Bob front & center</div>
+    <div class="banner vA">
+      <img class="land" src="img/landscape.png" alt="">
+      <div class="shade"></div>
+      <h2 class="logo logo-yellow">BOB<span class="d">-</span>A<span class="d">-</span>GOTCHI</h2>
+      <img class="bob hero" id="heroA" src="img/bob-celebrate.png" alt="Bob">
+    </div>
+
+    <!-- B: ROSTER -->
+    <div class="label">B · Roster — Bob plus the whole cast</div>
+    <div class="banner vB">
+      <img class="land" src="img/landscape.png" alt="">
+      <div class="shade"></div>
+      <h2 class="logo logo-blue">BOB<span class="d">-</span>A<span class="d">-</span>GOTCHI</h2>
+      <div class="roster">
+        <img src="img/bob-building.png" alt="">
+        <img src="img/bob-hungry.png" alt="">
+        <img src="img/bob-eating.png" alt="">
+        <img src="img/bob-sleeping.png" alt="">
+      </div>
+      <img class="bob star" id="heroB" src="img/bob-idle-0.png" alt="Bob">
+    </div>
+
+    <!-- C: SPLIT -->
+    <div class="label">C · Split — logo + command on the left, Bob on the right</div>
+    <div class="banner vC">
+      <img class="land" src="img/landscape.png" alt="">
+      <div class="shade"></div>
+      <div class="left">
+        <h2 class="logo logo-yellow">BOB<span class="d">-</span>A<span class="d">-</span>GOTCHI</h2>
+        <p class="tag">A pixel build buddy that lives in your editor — codes along, cheers your big commits, naps when you idle.</p>
+        <div class="cmd"><span class="g">curl</span> -fsSL …/install.sh | bash</div>
+      </div>
+      <img class="bob hero" id="heroC" src="img/bob-idle-0.png" alt="Bob">
+    </div>
+  </div>
+
+<script>
+  // Animate the idle Bobs (B and C) by cycling frames.
+  var idle = [0,1,2,3,4].map(function(i){ var im=new Image(); im.src="img/bob-idle-"+i+".png"; return im; });
+  var els = [document.getElementById("heroB"), document.getElementById("heroC")], f=0;
+  setInterval(function(){ f=(f+1)%idle.length; els.forEach(function(e){ if(e) e.src=idle[f].src; }); }, 220);
+  // Animate the hero in A by cycling celebrate frames.
+  var celeb = [0,3,6].map(function(i){ var im=new Image(); im.src="img/bob-celebrate-"+i+".png"; return im; });
+  var hA=document.getElementById("heroA"), c=0;
+  setInterval(function(){ c=(c+1)%celeb.length; hA.src=celeb[c].src; }, 260);
+</script>
+</body>
+</html>
