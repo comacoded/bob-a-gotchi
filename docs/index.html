@@ -3,206 +3,774 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bob-a-gotchi — a pixel build buddy for your editor</title>
-<meta name="description" content="Bob-a-gotchi is a pixel-art robot companion that lives in your editor sidebar — codes along while you type, cheers your AI's big commits, gets hungry, and naps when you idle." />
-<link rel="icon" href="favicon.ico" />
+<title>Bob-a-gotchi - a premium pixel build buddy for your editor</title>
+<meta name="description" content="Bob-a-gotchi is a pixel-art robot companion that lives in your editor sidebar, codes along while you type, cheers your AI's big commits, gets hungry, and naps when you idle." />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="alternate icon" href="favicon.ico" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --bg: #0c0e12;        /* off-black slate */
-    --bg2: #090a0d;
-    --panel: #15181f;
-    --panel2: #1b1f28;
-    --line: #262b36;
-    --text: #e8ecf3;
-    --muted: #969eae;
-    --blue: #4f6bff;
-    --purple: #9a7bff;
-    --green: #5ee06b;
-    --brick: #c45a34;
-    --brick2: #a8492a;
+    --bg: #0b0d12;
+    --bg-soft: #10141c;
+    --panel: #151922;
+    --panel-raised: #1a202c;
+    --panel-warm: #211b18;
+    --line: #2a3140;
+    --line-soft: rgba(255,255,255,.09);
+    --text: #f1f4f8;
+    --muted: #a9b1bf;
+    --faint: #707987;
+    --blue: #86a2ff;
+    --ibm-blue: #0f62fe;
+    --bob-blue: #4589ff;
+    --bob-blue-light: #78a9ff;
+    --green: #66dd82;
+    --coral: #ff8b6b;
+    --shadow: 0 24px 70px rgba(0,0,0,.42);
   }
+
   * { box-sizing: border-box; }
-  html, body { background: var(--bg); }
+  html { background: var(--bg); scroll-behavior: smooth; }
   body {
-    margin: 0; color: var(--text);
+    margin: 0;
+    color: var(--text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     line-height: 1.6;
+    overflow-x: hidden;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 280px),
+      radial-gradient(ellipse at top, rgba(134,162,255,.14), transparent 520px),
+      var(--bg);
   }
-  .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: .18;
+    background-image:
+      linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+    background-size: 32px 32px;
+    mask-image: linear-gradient(180deg, #000 0, transparent 72%);
+  }
   img { image-rendering: pixelated; }
+  a { color: inherit; }
+  .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
 
-  /* ============ BANNER ============ */
-  .banner {
-    position: relative; margin-top: 34px; line-height: 0;
-    border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    background: rgba(11,13,18,.84);
+    backdrop-filter: blur(16px);
   }
-  .b-land { display: block; width: 100%; height: auto; }
-
-  /* plain-text title overlaid on the banner */
-  .b-title { position: absolute; top: 18px; left: 0; right: 0; text-align: center; z-index: 2; pointer-events: none; line-height: 1.1; }
-  .b-title h1 {
-    margin: 0; font-weight: 800; letter-spacing: .5px;
-    font-size: clamp(30px, 6.4vw, 52px); color: #fff4e8;
-    text-shadow: 0 2px 18px rgba(0,0,0,.5), 0 2px 3px rgba(0,0,0,.75);
+  .nav-inner {
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    font-weight: 800;
+    letter-spacing: .2px;
+  }
+  .brand img { width: 30px; height: 30px; }
+  .brand span { font-family: "Press Start 2P", monospace; font-size: 12px; }
+  .nav-links { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: 14px; }
+  .nav-links a { text-decoration: none; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    padding: 0 14px;
+    border: 1px solid rgba(120,169,255,.55);
+    border-radius: 8px;
+    color: #fff;
+    background: linear-gradient(180deg, var(--bob-blue), var(--ibm-blue));
+    font-weight: 800;
+    text-decoration: none;
+    box-shadow: 0 10px 24px rgba(15,98,254,.26);
   }
 
-  /* hanging sign with the wordmark */
-  .b-sign { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); text-align: center; line-height: 1.4; }
-  .b-sign .posts { position: absolute; left: 0; right: 0; top: -16px; height: 16px; }
-  .b-sign .posts::before, .b-sign .posts::after { content: ""; position: absolute; top: 0; width: 2px; height: 16px; background: #2a3154; }
-  .b-sign .posts::before { left: 28px; }
-  .b-sign .posts::after { right: 28px; }
-  .b-sign .panel {
-    background: linear-gradient(180deg, rgba(13,18,40,0.92), rgba(8,11,28,0.92));
-    border: 2px solid #5d7bff; border-radius: 12px;
-    box-shadow: 0 6px 0 rgba(0,0,0,0.4), 0 0 24px rgba(93,123,255,0.35);
-    padding: 12px 22px 14px;
+  .hero {
+    position: relative;
+    min-height: auto;
+    display: grid;
+    align-items: center;
+    padding: 28px 0 40px;
+    overflow: hidden;
   }
-  .wordmark {
-    font-family: "Press Start 2P", monospace; font-size: 24px; line-height: 1.25; margin: 0;
-    background: linear-gradient(90deg, #8fa4ff, #c4a8ff);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    text-shadow: 0 2px 0 rgba(0,0,0,0.5);
+  .hero-shell {
+    position: relative;
+    min-height: 600px;
+    border: 1px solid var(--line-soft);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    background: #080a0f;
+    isolation: isolate;
   }
-  .sign-sub { font-family: "Press Start 2P", monospace; font-size: 7.5px; letter-spacing: 1px; color: #aeb8e6; margin: 9px 0 0; }
-  .bolt { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #aab6e8; }
-  .bolt.tl { top: 6px; left: 6px; } .bolt.tr { top: 6px; right: 6px; }
-  .bolt.bl { bottom: 6px; left: 6px; } .bolt.br { bottom: 6px; right: 6px; }
+  .hero-art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: right center;
+    opacity: 0;
+    transform: scale(1.01);
+    animation: heroCycle 18s infinite;
+  }
+  .hero-art:nth-child(2) { animation-delay: 6s; }
+  .hero-art:nth-child(3) { animation-delay: 12s; }
+  @keyframes heroCycle {
+    0%, 27% { opacity: 1; }
+    33%, 94% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  .hero-shell::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      linear-gradient(90deg, rgba(6,8,13,.82) 0%, rgba(6,8,13,.58) 44%, rgba(6,8,13,.06) 74%, rgba(6,8,13,.24) 100%),
+      linear-gradient(180deg, rgba(6,8,13,.04), rgba(6,8,13,.46));
+  }
+  .hero-content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 34px;
+    align-items: end;
+    min-height: 600px;
+    padding: clamp(28px, 5vw, 56px);
+  }
+  .hero-content > div,
+  .bob-stage { min-width: 0; }
+  h1 {
+    max-width: 760px;
+    margin: 0;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: .98;
+    letter-spacing: 0;
+  }
+  .pixel-title {
+    display: block;
+    margin-bottom: 14px;
+    color: var(--bob-blue-light);
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(20px, 3.2vw, 38px);
+    line-height: 1.22;
+    text-shadow:
+      2px 0 #111017, -2px 0 #111017, 0 2px #111017, 0 -2px #111017,
+      0 5px #0f3d91, 0 10px 24px rgba(15,98,254,.34);
+  }
+  .headline-line { display: block; }
+  .hero-copy {
+    max-width: 650px;
+    margin: 22px 0 0;
+    color: #d5dae5;
+    font-size: clamp(18px, 2.2vw, 22px);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 18px;
+    border-radius: 9px;
+    font-weight: 850;
+    text-decoration: none;
+    border: 1px solid transparent;
+  }
+  .button.primary {
+    color: #fff;
+    background: linear-gradient(180deg, var(--bob-blue), var(--ibm-blue));
+    box-shadow: 0 16px 34px rgba(15,98,254,.3);
+  }
+  .button.secondary {
+    color: #dfeaff;
+    border-color: rgba(120,169,255,.5);
+    background: rgba(15,98,254,.18);
+  }
+  .hero-compat {
+    margin: 14px auto 0;
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+  }
+  .bob-stage {
+    display: none;
+    position: relative;
+    align-self: stretch;
+    min-height: 410px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  .bob-hero {
+    width: min(260px, 72%);
+    filter: drop-shadow(0 24px 22px rgba(0,0,0,.62));
+  }
+  .sprite-strip {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .sprite-tile {
+    min-height: 84px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 10px;
+    background: rgba(9,12,18,.62);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .sprite-tile img { width: 58px; height: 58px; object-fit: contain; }
 
-  /* animated Bob in the foreground */
-  .b-bob { position: absolute; left: 6%; bottom: 5%; width: 12%; max-width: 104px; height: auto; }
+  .section { padding: 58px 0; }
+  .section-head {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 30px;
+  }
+  h2 {
+    margin: 0;
+    font-size: clamp(28px, 4vw, 44px);
+    line-height: 1;
+    letter-spacing: 0;
+  }
+  .kicker {
+    margin: 0 0 12px;
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 850;
+    letter-spacing: .12em;
+    line-height: 1.5;
+    text-transform: uppercase;
+  }
+  .section-copy {
+    max-width: 560px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 17px;
+  }
 
-  /* ============ PAGE ============ */
-  .intro { text-align: center; padding: 26px 0 6px; }
-  .tagline { color: var(--muted); font-size: 18px; margin: 0 auto; max-width: 640px; }
-  .pills { margin-top: 16px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-  .pill { font-size: 13px; color: var(--muted); background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
-
-  section { padding: 26px 0; }
-  h2 { font-family: "Press Start 2P", monospace; font-size: 15px; color: var(--text); margin: 0 0 16px; }
-
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 22px; }
-  .lead { color: var(--muted); margin: 0 0 16px; }
-
-  /* terminal-window command box — wraps, never scrolls */
-  .term { background: #07090d; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .term-bar { display: flex; align-items: center; gap: 7px; padding: 9px 12px; background: #0d1016; border-bottom: 1px solid var(--line); }
-  .term-bar .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .install-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(260px, .9fr);
+    gap: 18px;
+  }
+  .panel {
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025));
+    box-shadow: 0 18px 46px rgba(0,0,0,.24);
+  }
+  .install-card { padding: 24px; }
+  .lead { margin: 0 0 18px; color: #d7dde7; font-size: 18px; }
+  .term {
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    background: #080a0e;
+  }
+  .term-bar {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 42px;
+    padding: 0 12px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    background: #10141d;
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
   .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
-  .term-bar .copy { margin-left: auto; display: inline-flex; align-items: center; gap: 6px;
-    background: var(--blue); color: #fff; border: none; border-radius: 7px; padding: 5px 11px;
-    font-size: 12.5px; font-weight: 600; cursor: pointer; }
-  .term-bar .copy:hover { background: #5f79ff; }
-  .term-bar .copy.copied { background: var(--green); color: #07090d; }
-  .term-body { padding: 14px 16px; }
-  .term-body code {
-    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 13.5px;
-    color: #cdd6f4; white-space: pre-wrap; word-break: break-all; line-height: 1.7;
+  .copy {
+    margin-left: auto;
+    min-height: 30px;
+    padding: 0 11px;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 7px;
+    color: #fff;
+    background: var(--ibm-blue);
+    font-size: 12.5px;
+    font-weight: 850;
+    cursor: pointer;
   }
-  .term-body .prompt { color: var(--green); user-select: none; margin-right: 8px; }
-  .hint { color: var(--muted); font-size: 14px; margin: 14px 0 0; }
-  .ghstar { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px;
-    background: #f2ecdd; color: #15171c; text-decoration: none; font-weight: 700; font-size: 14px;
-    border-radius: 9px; padding: 9px 16px; border: 1px solid #d8d0bd; transition: background .15s; }
-  .ghstar:hover { background: #fff8ea; }
-  .ghstar svg { display: block; }
-  details { margin-top: 14px; }
-  summary { cursor: pointer; color: var(--muted); font-size: 14px; }
-  details code { color: #cdd6f4; font-family: ui-monospace, Menlo, monospace; font-size: 13px; }
+  .copy.copied { background: var(--green); }
+  .term-body { padding: 16px; }
+  .term-body code {
+    color: #d7def0;
+    font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prompt { color: var(--green); user-select: none; margin-right: 8px; }
+  .hint { margin: 14px 0 0; color: var(--muted); font-size: 14px; }
+  details { margin-top: 14px; color: var(--muted); }
+  summary { cursor: pointer; }
+  details code { color: #d7def0; font-family: ui-monospace, Menlo, monospace; }
+  .proof-card {
+    display: grid;
+    gap: 12px;
+    padding: 18px;
+  }
+  .proof-row {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 12px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,.035);
+  }
+  .proof-row img { width: 42px; height: 42px; object-fit: contain; }
+  .proof-row strong { display: block; line-height: 1.2; }
+  .proof-row span { display: block; color: var(--muted); font-size: 13px; line-height: 1.35; margin-top: 3px; }
 
-  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .feat { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; gap: 14px; align-items: flex-start; }
-  .feat img { width: 56px; height: 56px; flex: none; }
-  .feat h3 { margin: 2px 0 4px; font-size: 16px; }
-  .feat p { margin: 0; color: var(--muted); font-size: 14px; }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .feature {
+    min-height: 252px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 18px;
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    background: var(--panel);
+  }
+  .feature img { width: 112px; height: 112px; object-fit: contain; }
+  .feature h3 { margin: 16px 0 8px; font-size: 18px; line-height: 1.15; }
+  .feature p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
 
-  footer { color: var(--muted); font-size: 14px; text-align: center; padding: 30px 0 50px; border-top: 1px solid var(--line); margin-top: 24px; }
-  footer a { color: #9fb0ff; text-decoration: none; }
+  .showcase {
+    position: relative;
+    overflow: hidden;
+    min-height: 400px;
+    border: 1px solid var(--line-soft);
+    border-radius: 20px;
+    background: #0b0d12;
+  }
+  .showcase img.scene {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: .78;
+  }
+  .showcase::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(9,12,18,.94) 0%, rgba(9,12,18,.6) 44%, rgba(9,12,18,.1) 100%);
+  }
+  .showcase-copy {
+    position: relative;
+    z-index: 1;
+    max-width: 520px;
+    padding: clamp(24px, 5vw, 48px);
+  }
+  .showcase-copy p { color: #d2d8e4; font-size: 18px; margin: 16px 0 0; }
+  .mini-gallery {
+    position: absolute;
+    z-index: 2;
+    right: clamp(18px, 5vw, 52px);
+    bottom: clamp(18px, 5vw, 48px);
+    display: flex;
+    gap: 12px;
+  }
+  .mini-gallery img {
+    width: 76px;
+    height: 76px;
+    object-fit: contain;
+    padding: 9px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 12px;
+    background: rgba(7,9,14,.68);
+  }
+  .world-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .world-card {
+    overflow: hidden;
+    border: 1px solid var(--line-soft);
+    border-radius: 16px;
+    background: var(--panel);
+  }
+  .world-card img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 8;
+    object-fit: cover;
+  }
+  .world-card div { padding: 16px; }
+  .world-card h3 { margin: 0 0 6px; font-size: 17px; }
+  .world-card p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.45; }
+
+  .timeline {
+    position: relative;
+    display: grid;
+    gap: 28px;
+    max-width: 760px;
+    margin: 42px auto 0;
+    isolation: isolate;
+  }
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 54px;
+    bottom: 54px;
+    width: 2px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, var(--bob-blue-light), var(--ibm-blue), var(--green));
+    z-index: 0;
+  }
+  .milestone {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+  .milestone-card {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    align-items: center;
+    gap: 22px;
+    width: min(100%, 640px);
+    padding: 24px 28px 26px;
+    border: 1px solid var(--line-soft);
+    border-radius: 14px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.052), rgba(255,255,255,.022)),
+      var(--panel);
+    box-shadow: 0 0 0 10px var(--bg);
+  }
+  .milestone-illustration {
+    display: block;
+    width: 92px;
+    height: 92px;
+    object-fit: contain;
+    margin: 0;
+  }
+  .milestone-body { min-width: 0; text-align: left; }
+  .milestone-top {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .milestone h3 { margin: 0; font-size: 18px; }
+  .tag {
+    flex: none;
+    padding: 4px 8px;
+    border: 1px solid rgba(255,255,255,.13);
+    border-radius: 999px;
+    color: #dce4f0;
+    background: rgba(255,255,255,.06);
+    font-size: 12px;
+    font-weight: 800;
+  }
+  .milestone p { max-width: 520px; margin: 0; color: var(--muted); }
+
+  footer {
+    margin-top: 34px;
+    padding: 32px 0 46px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+  .footer-inner a { color: #d8e0ff; text-decoration: none; }
+
+  @media (max-width: 900px) {
+    .hero-shell, .hero-content { min-height: 0; }
+    .hero-content { grid-template-columns: 1fr; }
+    .bob-stage { min-height: 220px; align-items: flex-start; }
+    .bob-hero { width: 160px; }
+    .sprite-strip { max-width: 420px; }
+    .install-grid, .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 
   @media (max-width: 640px) {
-    .wordmark { font-size: 16px; }
-    .sign-sub { font-size: 6px; }
-    .b-sign { top: 8px; }
-    .grid { grid-template-columns: 1fr; }
+    .wrap { width: min(1120px, calc(100% - 28px)); }
+    .nav-inner { height: 58px; }
+    .nav-links { display: none; }
+    .brand span { font-size: 10px; }
+    .hero { min-height: auto; padding: 20px 0 36px; }
+    .hero-shell { border-radius: 18px; }
+    .hero-shell::before {
+      background:
+        linear-gradient(180deg, rgba(6,8,13,.82) 0%, rgba(6,8,13,.62) 55%, rgba(6,8,13,.3) 100%),
+        linear-gradient(90deg, rgba(6,8,13,.58), rgba(6,8,13,.22));
+    }
+    .hero-content { padding: 24px; justify-items: start; }
+    .hero-content > div { justify-self: start; width: 100%; max-width: calc(100vw - 110px); }
+    h1 { max-width: 300px !important; font-size: clamp(34px, 9vw, 42px); line-height: 1.08; }
+    .pixel-title { font-size: clamp(16px, 5vw, 20px); }
+    .hero-copy { max-width: 280px !important; font-size: 18px; line-height: 1.55; }
+    .hero-actions { display: grid; align-items: stretch; max-width: 280px !important; }
+    .button { width: 100%; }
+    .bob-stage { display: none; }
+    .bob-hero { width: 116px; }
+    .sprite-strip { display: none; }
+    .install-grid, .feature-grid { grid-template-columns: 1fr; }
+    .world-grid { grid-template-columns: 1fr; }
+    .section { padding: 44px 0; }
+    .section-head { display: block; }
+    .showcase { min-height: 520px; }
+    .showcase::after { background: linear-gradient(180deg, rgba(9,12,18,.94), rgba(9,12,18,.58)); }
+    .mini-gallery { left: 24px; right: 24px; justify-content: space-between; }
+    .mini-gallery img { width: 62px; height: 62px; }
+    .milestone-top { display: block; }
+    .tag { display: inline-flex; margin-top: 8px; }
+    .milestone-card { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .milestone-illustration { margin: 0 auto; }
+    .milestone-body { text-align: center; }
+    .milestone p { margin: 0 auto; }
+    .footer-inner { display: block; }
   }
 </style>
 </head>
 <body>
-  <div class="wrap">
-
-    <!-- ====== Banner ====== -->
-    <div class="banner">
-      <img class="b-land" src="img/banner.png" alt="Bob on a rafter at sunset on a construction site" />
-      <div class="b-title"><h1>Bob-a-gotchi</h1></div>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#top" aria-label="Bob-a-gotchi home">
+        <img src="favicon.svg" alt="" />
+        <span>Bob-a-gotchi</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a class="nav-cta" href="#quick-start">Install</a>
+        <a href="#features">Features</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="https://github.com/comacoded/bob-a-gotchi" target="_blank" rel="noopener">GitHub</a>
+      </nav>
     </div>
+  </header>
 
-    <div class="intro">
-      <p class="tagline">A pixel-art build buddy that lives in your editor. He codes along while you type, cheers when your AI ships a big block, gets hungry, tells dad jokes, and naps when you idle.</p>
-      <div class="pills">
-        <span class="pill">IBM Bob</span><span class="pill">VS Code</span>
-        <span class="pill">Cursor</span><span class="pill">VSCodium</span>
-      </div>
-    </div>
+  <main id="top">
+    <section class="hero">
+      <div class="wrap">
+        <div class="hero-shell">
+          <img class="hero-art" src="img/header-alt-rooftop-code-bricks-bob-face.png" alt="Pixel construction skyline with Bob building code bricks" />
+          <img class="hero-art" src="img/header-alt-code-bridge-bob-face.png" alt="Bob building a floating bridge of glowing code blocks" />
+          <img class="hero-art" src="img/header-alt-workshop-bob-face.png" alt="Bob building in a rooftop developer workshop" />
+          <div class="hero-content">
+            <div>
+              <h1><span class="pixel-title">Bob-a-gotchi</span><span class="headline-line">A build buddy</span><span class="headline-line">with a little soul.</span></h1>
+              <p class="hero-copy">Bob lives in your editor sidebar, reacts to real coding activity, celebrates big generated blocks, gets hungry, and naps when you step away.</p>
+              <div class="hero-actions">
+                <a class="button primary" href="#quick-start">Install Bob</a>
+                <a class="button secondary" href="#roadmap">View roadmap</a>
+              </div>
+            </div>
 
-    <!-- ====== Quick Start ====== -->
-    <section id="quick-start">
-      <h2>Quick Start</h2>
-      <div class="card">
-        <p class="lead">Install Bob into your editor with one command — no Marketplace, no account.</p>
-        <div class="term">
-          <div class="term-bar">
-            <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
-            <button class="copy" id="copy" aria-label="Copy install command">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              <span id="copy-label">Copy</span>
-            </button>
-          </div>
-          <div class="term-body">
-            <code id="cmd"><span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/comacoded/bob-a-gotchi/main/install.sh | bash</code>
           </div>
         </div>
-        <p class="hint">Then reload your editor window and click the <strong>B</strong> in the activity bar to meet Bob.</p>
-        <a class="ghstar" href="https://github.com/comacoded/bob-a-gotchi" target="_blank" rel="noopener">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-          Star on GitHub
-        </a>
-        <details>
-          <summary>Prefer to install by hand?</summary>
-          <p class="hint">Grab the <code>.vsix</code> from the <a href="https://github.com/comacoded/bob-a-gotchi/releases/latest">latest release</a>, then run<br>
-          <code>code --install-extension ibm-bob-tamagotchi.vsix --force</code></p>
-        </details>
+        <p class="hero-compat">Works with IBM Bob, VS Code, Cursor, and VSCodium.</p>
       </div>
     </section>
 
-    <!-- ====== Features ====== -->
-    <section>
-      <h2>What Bob does</h2>
-      <div class="grid">
-        <div class="feat"><img src="img/bob-building.png" alt=""><div><h3>Builds while you code</h3><p>Bob lays bricks as you type. When a big block lands, confetti + "wow great block!"</p></div></div>
-        <div class="feat"><img src="img/bob-hungry.png" alt=""><div><h3>Gets hungry</h3><p>He rubs his tummy and a burger button appears. Feed him and he munches: "mmm tasty."</p></div></div>
-        <div class="feat"><img src="img/bob-sleeping.png" alt=""><div><h3>Naps when you idle</h3><p>Step away and Bob tucks into bed under the moon, breathing softly with a little zzz.</p></div></div>
-        <div class="feat"><img src="img/bob-celebrate.png" alt=""><div><h3>Tells dad jokes</h3><p>While idling he drops programming dad jokes. "I named a bug 'Steve'. We've been together for weeks."</p></div></div>
+    <section class="section" id="quick-start">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Quick start</p>
+            <h2>Install in one command.</h2>
+          </div>
+          <p class="section-copy">No Marketplace account needed. Run the installer, reload your editor window, and click the Bob icon in the activity bar.</p>
+        </div>
+
+        <div class="install-grid">
+          <div class="panel install-card">
+            <p class="lead">Use the hosted installer to fetch the latest packaged extension.</p>
+            <div class="term">
+              <div class="term-bar">
+                <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+                <button class="copy" id="copy" aria-label="Copy install command"><span id="copy-label">Copy</span></button>
+              </div>
+              <div class="term-body">
+                <code id="cmd"><span class="prompt">$</span>curl -fsSL https://raw.githubusercontent.com/comacoded/bob-a-gotchi/main/install.sh | bash</code>
+              </div>
+            </div>
+            <p class="hint">Bob installs into the editors it detects: IBM Bob, VS Code, Cursor, and VSCodium.</p>
+            <details>
+              <summary>Prefer to install by hand?</summary>
+              <p class="hint">Grab the <code>.vsix</code> from the <a href="https://github.com/comacoded/bob-a-gotchi/releases/latest">latest release</a>, then run <code>code --install-extension ibm-bob-tamagotchi.vsix --force</code>.</p>
+            </details>
+          </div>
+
+          <div class="panel proof-card" aria-label="Bob compatibility and behavior summary">
+            <div class="proof-row">
+              <img src="img/bob-building.png" alt="" />
+              <div><strong>Activity aware</strong><span>Typing, pasted blocks, and AI completions change Bob's behavior.</span></div>
+            </div>
+            <div class="proof-row">
+              <img src="img/bob-celebrate.png" alt="" />
+              <div><strong>Celebrates the wins</strong><span>Big blocks trigger confetti and a tiny cheer from your sidebar.</span></div>
+            </div>
+            <div class="proof-row">
+              <img src="img/bob-sleeping.png" alt="" />
+              <div><strong>Persistent care loop</strong><span>Hunger, energy, and mood carry across sessions.</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <footer>
-      <p>Built by Nick Coma · <a href="https://github.com/comacoded/bob-a-gotchi">GitHub</a> · MIT</p>
-    </footer>
+    <section class="section" id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="kicker">The companion loop</p>
+            <h2>Small reactions, real personality.</h2>
+          </div>
+          <p class="section-copy">Bob turns the invisible rhythm of coding into a tiny ambient toy: subtle enough for daily work, expressive enough to make the sidebar worth checking.</p>
+        </div>
 
-  </div>
+        <div class="feature-grid">
+          <article class="feature">
+            <img src="img/bob-building.png" alt="" />
+            <div><h3>Builds while you code</h3><p>Bob lays bricks as edits land, then settles back down when the keyboard goes quiet.</p></div>
+          </article>
+          <article class="feature">
+            <img src="img/bob-celebrate.png" alt="" />
+            <div><h3>Spots big AI blocks</h3><p>Large inserted chunks become a celebration moment instead of silent background work.</p></div>
+          </article>
+          <article class="feature">
+            <img src="img/bob-hungry.png" alt="" />
+            <div><h3>Needs occasional care</h3><p>A simple food loop gives Bob stakes without turning your editor into a chore list.</p></div>
+          </article>
+          <article class="feature">
+            <img src="img/bob-sleeping.png" alt="" />
+            <div><h3>Rests when you do</h3><p>Idle time becomes a nap state, with energy recovery waiting for your next session.</p></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="roadmap">
+      <div class="wrap">
+        <div class="section-head">
+          <div>
+            <p class="kicker">Development timeline</p>
+            <h2>Planned and upcoming.</h2>
+          </div>
+          <p class="section-copy">A lightweight roadmap for the next wave of Bob-a-gotchi improvements, moving from animation polish into play, personality, and richer habitats.</p>
+        </div>
+
+        <div class="timeline">
+          <article class="milestone">
+            <div class="milestone-card">
+              <img class="milestone-illustration" src="img/bob-building.png" alt="" />
+              <div class="milestone-body">
+                <div class="milestone-top"><span class="tag">Available now</span><h3>Current release</h3></div>
+                <p>Sidebar companion, typing and AI-block reactions, hunger, sleep, persistence, dad jokes, and one-command installation.</p>
+              </div>
+            </div>
+          </article>
+          <article class="milestone">
+            <div class="milestone-card">
+              <img class="milestone-illustration" src="img/bob-celebrate.png" alt="" />
+              <div class="milestone-body">
+                <div class="milestone-top"><span class="tag">Next</span><h3>Animation polish pack</h3></div>
+                <p>More transition frames, richer celebration moments, and cleaner visual feedback when Bob changes mood or state.</p>
+              </div>
+            </div>
+          </article>
+          <article class="milestone">
+            <div class="milestone-card">
+              <img class="milestone-illustration" src="img/bob-eating.png" alt="" />
+              <div class="milestone-body">
+                <div class="milestone-top"><span class="tag">Planned</span><h3>Mini games with Bob</h3></div>
+                <p>Small in-editor games with Bob, starting with tic-tac-toe as a quick break between coding sessions.</p>
+              </div>
+            </div>
+          </article>
+          <article class="milestone">
+            <div class="milestone-card">
+              <img class="milestone-illustration" src="img/bob-idle-4.png" alt="" />
+              <div class="milestone-body">
+                <div class="milestone-top"><span class="tag">Planned</span><h3>More personality</h3></div>
+                <p>Richer food interactions, more expressive reactions, and new ways for Bob to respond to the work happening in your editor.</p>
+              </div>
+            </div>
+          </article>
+          <article class="milestone">
+            <div class="milestone-card">
+              <img class="milestone-illustration" src="img/bob-sleeping.png" alt="" />
+              <div class="milestone-body">
+                <div class="milestone-top"><span class="tag">Future</span><h3>Theme and habitat upgrades</h3></div>
+                <p>New places for Bob to live, including grassy knolls, fishing by the pond, and sitting at a computer desk.</p>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>Built by Nick Coma. MIT licensed.</span>
+      <span><a href="https://github.com/comacoded/bob-a-gotchi">GitHub</a> / <a href="#quick-start">Install</a></span>
+    </div>
+  </footer>
 
 <script>
-  // Copy the install command (without the leading $ prompt).
   (function () {
-    var btn = document.getElementById("copy"), label = document.getElementById("copy-label");
+    var btn = document.getElementById("copy");
+    var label = document.getElementById("copy-label");
     var cmd = "curl -fsSL https://raw.githubusercontent.com/comacoded/bob-a-gotchi/main/install.sh | bash";
     btn.addEventListener("click", function () {
       navigator.clipboard.writeText(cmd).then(function () {
-        btn.classList.add("copied"); label.textContent = "Copied!";
-        setTimeout(function () { btn.classList.remove("copied"); label.textContent = "Copy"; }, 1600);
+        btn.classList.add("copied");
+        label.textContent = "Copied";
+        setTimeout(function () {
+          btn.classList.remove("copied");
+          label.textContent = "Copy";
+        }, 1600);
       });
     });
   })();
