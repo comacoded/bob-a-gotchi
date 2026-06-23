@@ -6,7 +6,11 @@ export type InboundMessage =
   | { type: "feed" }
   | { type: "wake" }
   | { type: "reset" }
-  | { type: "ready" };
+  | { type: "ready" }
+  | { type: "acceptPlay" }
+  | { type: "declinePlay" }
+  | { type: "playResult"; outcome: "win" | "lose" | "draw" }
+  | { type: "endPlay" };
 
 /**
  * Hosts Bob inside the sidebar webview view. The view is purely presentational:
@@ -80,12 +84,27 @@ export class BobViewProvider implements vscode.WebviewViewProvider {
   <div class="nameplate">
     <span id="name">Bob</span>
     <span id="age" class="age"></span>
+    <button id="playNow" class="play-now" title="Play tic-tac-toe" aria-label="Play tic-tac-toe"><span>🕹️</span></button>
   </div>
 
   <div class="actions" id="actions" hidden>
     <button id="feed" class="pix-btn">
       <img class="pix" src="${media("food.svg")}" alt="" /> Feed Bob
     </button>
+  </div>
+
+  <div class="invite" id="invite" hidden>
+    <button id="playYes" class="pix-btn">Let's play! ❌⭕</button>
+    <button id="playNo" class="pix-btn ghost">Not now</button>
+  </div>
+
+  <div class="game" id="game" hidden>
+    <div class="ttt" id="ttt" role="grid" aria-label="Tic-tac-toe board"></div>
+    <div class="ttt-status" id="tttStatus">Your turn — you're ❌</div>
+    <div class="ttt-controls">
+      <button id="tttAgain" class="pix-btn" hidden>Play again</button>
+      <button id="tttDone" class="pix-btn ghost">Done</button>
+    </div>
   </div>
 
   <script nonce="${nonce}">window.__SPRITES_BASE__ = "${spritesBase}";</script>

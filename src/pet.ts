@@ -9,6 +9,8 @@ export type Activity =
   | "hungry"
   | "fed"
   | "celebrate"
+  | "wantsToPlay"
+  | "playing"
   | "sleeping"
   | "gone";
 
@@ -32,7 +34,11 @@ export interface PetSnapshot {
 
 export interface PetConfig {
   idleSleepMinutes: number;
+  /** Minutes of idle before Bob may offer a game (must be < idleSleepMinutes). */
+  playInviteMinutes: number;
   statDecayMinutes: number;
+  /** Minutes for a full belly to drain down to the hungry threshold. */
+  hungerMinutes: number;
   permadeath: boolean;
 }
 
@@ -56,6 +62,15 @@ interface PetData {
   promptUntil: number;
   /** Timestamp until which Bob is getting up / throwing off his blanket. */
   wakingUntil: number;
+  /** True while Bob is asking the user to play tic-tac-toe. */
+  wantsToPlay: boolean;
+  /** True while a tic-tac-toe game is in progress. */
+  isPlaying: boolean;
+  /**
+   * The `lastActivityAt` value for which we already decided whether to offer a
+   * game. Lets us roll the "wanna play?" chance exactly once per idle spell.
+   */
+  playPromptKey: number;
 }
 
 const CLAMP = (n: number) => Math.max(0, Math.min(100, n));
@@ -67,10 +82,13 @@ const HUNGRY_THRESHOLD = 30;
 /** How long Bob spends throwing off the blanket and getting up before building. */
 const WAKE_MS = 1300;
 
+/** Chance Bob actually offers a game once he hits the invite threshold. */
+const PLAY_INVITE_CHANCE = 0.5;
+
 export function freshPet(name: string, now: number): PetData {
   return {
     name,
-    fullness: 80,
+    fullness: 100,
     energy: 90,
     happiness: 85,
     bornAt: now,
@@ -83,6 +101,9 @@ export function freshPet(name: string, now: number): PetData {
     fedUntil: 0,
     promptUntil: 0,
     wakingUntil: 0,
+    wantsToPlay: false,
+    isPlaying: false,
+    playPromptKey: 0,
   };
 }
 
@@ -110,7 +131,7 @@ export class PetEngine {
     }
     this.data.isAsleep = false;
     this.data.lastActivityAt = now;
-    this.data.fullness = CLAMP(this.data.fullness + 40);
+    this.data.fullness = CLAMP(this.data.fullness + 70);
     this.data.happiness = CLAMP(this.data.happiness + 12);
     this.data.fedUntil = now + 3200;
   }
@@ -141,7 +162,10 @@ export class PetEngine {
     this.data.fedUntil = 0;
     this.data.promptUntil = 0;
     this.data.wakingUntil = 0;
-    this.data.fullness = Math.max(this.data.fullness, 70);
+    this.data.wantsToPlay = false;
+    this.data.isPlaying = false;
+    this.data.playPromptKey = 0;
+    this.data.fullness = Math.max(this.data.fullness, 100);
     this.data.energy = Math.max(this.data.energy, 70);
   }
 
@@ -181,6 +205,40 @@ export class PetEngine {
     this.data.happiness = CLAMP(this.data.happiness + 10);
   }
 
+  /** User accepted the game: start playing (and stop offering / sleeping). */
+  startPlay(now: number): void {
+    if (this.data.isGone) {
+      return;
+    }
+    this.data.isAsleep = false;
+    this.data.wantsToPlay = false;
+    this.data.isPlaying = true;
+    this.data.lastActivityAt = now;
+  }
+
+  /** User waved off the invite: drop it and restart the idle clock. */
+  dismissPlay(now: number): void {
+    this.data.wantsToPlay = false;
+    this.data.lastActivityAt = now;
+  }
+
+  /** A finished game: nudge happiness. Bob's a good sport either way. */
+  registerPlayResult(outcome: "win" | "lose" | "draw", now: number): void {
+    if (this.data.isGone) {
+      return;
+    }
+    this.data.lastActivityAt = now;
+    const bump = outcome === "win" ? 8 : outcome === "draw" ? 4 : 6;
+    this.data.happiness = CLAMP(this.data.happiness + bump);
+  }
+
+  /** Game closed: leave play mode and restart the idle clock. */
+  endPlay(now: number): void {
+    this.data.isPlaying = false;
+    this.data.wantsToPlay = false;
+    this.data.lastActivityAt = now;
+  }
+
   /** Advance time: apply decay, idle-sleep, energy recovery, and death. */
   tick(now: number): void {
     if (this.data.isGone) {
@@ -192,13 +250,39 @@ export class PetEngine {
     const decayPerMin = 100 / Math.max(1, this.config.statDecayMinutes * 8);
     const idleMin = (now - this.data.lastActivityAt) / MINUTE;
 
-    // Fall asleep after the idle threshold.
-    if (!this.data.isAsleep && idleMin >= this.config.idleSleepMinutes) {
-      this.data.isAsleep = true;
+    // Partway through the idle stretch (before sleep), Bob may offer a game.
+    // Decide once per idle spell so he asks at most once, and only sometimes.
+    const playWindow =
+      idleMin >= this.config.playInviteMinutes &&
+      idleMin < this.config.idleSleepMinutes;
+    if (
+      !this.data.isAsleep &&
+      !this.data.isPlaying &&
+      this.data.fullness >= HUNGRY_THRESHOLD &&
+      playWindow &&
+      this.data.playPromptKey !== this.data.lastActivityAt
+    ) {
+      this.data.playPromptKey = this.data.lastActivityAt;
+      this.data.wantsToPlay = Math.random() < PLAY_INVITE_CHANCE;
     }
 
-    // Hunger always creeps down.
-    this.data.fullness = CLAMP(this.data.fullness - decayPerMin * elapsedMin);
+    // Fall asleep after the idle threshold (never mid-game), and the offer
+    // expires when he nods off.
+    if (
+      !this.data.isAsleep &&
+      !this.data.isPlaying &&
+      idleMin >= this.config.idleSleepMinutes
+    ) {
+      this.data.isAsleep = true;
+      this.data.wantsToPlay = false;
+    }
+
+    // Hunger always creeps down. It has its own clock so a full belly drains to
+    // the hungry threshold in exactly config.hungerMinutes (default 30), keeping
+    // the feed cadence visible regardless of the slower energy/happiness decay.
+    const hungerPerMin =
+      (100 - HUNGRY_THRESHOLD) / Math.max(1, this.config.hungerMinutes);
+    this.data.fullness = CLAMP(this.data.fullness - hungerPerMin * elapsedMin);
 
     if (this.data.isAsleep) {
       // Sleeping recovers energy faster than it drains anything else.
@@ -226,6 +310,14 @@ export class PetEngine {
   snapshot(now: number): PetSnapshot {
     const d = this.data;
     const ageDays = Math.floor((now - d.bornAt) / (24 * 60 * MINUTE));
+    const idleMin = (now - d.lastActivityAt) / MINUTE;
+
+    // The offer is only valid during the idle window before sleep; if the user
+    // resumed activity the clock resets and the invite quietly disappears.
+    const offering =
+      d.wantsToPlay &&
+      idleMin >= this.config.playInviteMinutes &&
+      idleMin < this.config.idleSleepMinutes;
 
     let activity: Activity;
     let mood: string;
@@ -233,6 +325,9 @@ export class PetEngine {
     if (d.isGone) {
       activity = "gone";
       mood = "gone";
+    } else if (d.isPlaying) {
+      activity = "playing";
+      mood = "playing";
     } else if (d.isAsleep) {
       activity = "sleeping";
       mood = d.energy < 50 ? "exhausted" : "sleeping";
@@ -254,6 +349,9 @@ export class PetEngine {
     } else if (d.fullness < HUNGRY_THRESHOLD) {
       activity = "hungry";
       mood = "hungry";
+    } else if (offering) {
+      activity = "wantsToPlay";
+      mood = "wantsToPlay";
     } else {
       activity = "idle";
       mood = this.deriveIdleMood();

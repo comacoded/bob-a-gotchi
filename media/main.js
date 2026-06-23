@@ -8,8 +8,11 @@
   const speech = document.getElementById("speech");
   const nameEl = document.getElementById("name");
   const ageEl = document.getElementById("age");
+  const playNowEl = document.getElementById("playNow");
 
   const actionsEl = document.getElementById("actions");
+  const inviteEl = document.getElementById("invite");
+  const gameEl = document.getElementById("game");
   const MAX_LEVEL = 8;
 
   const MOOD_LINES = {
@@ -24,8 +27,13 @@
     sad: "Feeling a bit down.",
     sleeping: "Zzz…",
     exhausted: "Zzz… (wiped out)",
+    wantsToPlay: "wanna play tic-tac-toe?",
     gone: "Bob has powered down.",
   };
+
+  // States that have no sprites of their own borrow the idle frames.
+  const SPRITE_ALIAS = { wantsToPlay: "idle", playing: "idle" };
+  const spriteKeyFor = (c) => SPRITE_ALIAS[c] || c;
 
   let scale = 1.5;
   /** @type {Record<string, {images: HTMLImageElement[], fps: number, ok: boolean}>} */
@@ -36,6 +44,10 @@
   let lastAdvance = 0;
   let confetti = [];
   let buildAccum = 0;
+  // While performance.now() < danceUntil, Bob does a victory dance (he won a game).
+  let danceUntil = 0;
+  let danceStart = 0;
+  let wasDancing = false;
 
   // ---- Load sprite manifest + frame images (graceful fallback to drawn Bob) ----
   const base = window.__SPRITES_BASE__;
@@ -80,23 +92,55 @@
 
   // ---- Render loop ----
   function loop(ts) {
-    const anim = anims[current] && anims[current].ok ? anims[current] : null;
-    if (manifestReady && anim) {
-      drawSprite(anim, ts);
-    } else {
-      drawPlaceholder(ts);
+    const dancing = ts < danceUntil;
+    // Restart the frame counter when the dance begins so the moonwalk plays
+    // from its first frame, and anchor the glide so it starts centered.
+    if (dancing && !wasDancing) {
+      frame = 0;
+      lastAdvance = ts;
+      danceStart = ts;
     }
+    wasDancing = dancing;
+
+    // Prefer the real moonwalk sprite; fall back to the procedural jig if those
+    // frames aren't present.
+    const danceAnim =
+      dancing && anims.dancing && anims.dancing.ok ? anims.dancing : null;
+    if (danceAnim) {
+      drawSprite(danceAnim, ts, "dancing", false);
+    } else {
+      const animKey = spriteKeyFor(current);
+      const anim = anims[animKey] && anims[animKey].ok ? anims[animKey] : null;
+      if (manifestReady && anim) {
+        drawSprite(anim, ts, animKey, dancing);
+      } else {
+        drawPlaceholder(ts);
+      }
+    }
+
+    // Glide the whole sprite left, then right, then back to center to sell the
+    // moonwalk. Horizontal only (no vertical), via CSS so it never clips.
+    if (dancing && danceAnim) {
+      const g = Math.round(-Math.sin((ts - danceStart) / 270) * 12);
+      canvas.style.transform = "translateX(" + g + "px)";
+    } else if (canvas.style.transform) {
+      canvas.style.transform = "";
+    }
+
     if (current === "building") {
       buildAccum = Math.min(MAX_LEVEL, buildAccum + 0.05);
     }
     if ((current === "building" || current === "celebrate") && buildAccum > 0.5) {
       drawBuilding(Math.floor(buildAccum));
     }
+    if (dancing) {
+      drawDanceNotes(ts);
+    }
     drawConfetti();
     requestAnimationFrame(loop);
   }
 
-  function drawSprite(anim, ts) {
+  function drawSprite(anim, ts, animKey, dancing) {
     if (ts - lastAdvance > 1000 / anim.fps) {
       frame = (frame + 1) % anim.images.length;
       lastAdvance = ts;
@@ -105,14 +149,50 @@
       frame = 0;
     }
     const img = anim.images[frame];
-    sizeCanvas(img.width, img.height);
+    sizeCanvas(img.width, img.height, animKey);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.imageSmoothingEnabled = false;
     if (current === "sleeping") {
       drawSleepScene(img, ts);
       return;
     }
+    if (dancing) {
+      drawDancingBob(img, ts);
+      return;
+    }
     ctx.drawImage(img, 0, 0);
+  }
+
+  // A victory jig: shuffle side to side with little hops and a tilt that leans
+  // into each step. Rotates around the bottom-center so his feet stay grounded.
+  function drawDancingBob(img, ts) {
+    const sway = Math.sin(ts / 130) * 3;
+    const hop = -Math.abs(Math.sin(ts / 165)) * 5;
+    const tilt = Math.sin(ts / 130) * 0.14;
+    ctx.save();
+    ctx.translate(sway, hop);
+    ctx.translate(canvas.width / 2, canvas.height);
+    ctx.rotate(tilt);
+    ctx.translate(-canvas.width / 2, -canvas.height);
+    ctx.drawImage(img, 0, 0);
+    ctx.restore();
+  }
+
+  // Two music notes bobbing up beside him while he dances.
+  function drawDanceNotes(ts) {
+    ctx.imageSmoothingEnabled = false;
+    ctx.font = "10px monospace";
+    ctx.textAlign = "center";
+    const glyphs = ["♪", "♫"];
+    const tint = ["#5ee06b", "#ffd34d"];
+    for (let i = 0; i < 2; i++) {
+      const x = canvas.width * (i ? 0.8 : 0.2) + Math.sin(ts / 280 + i) * 3;
+      const y = canvas.height * 0.5 - ((ts / 14 + i * 28) % 36);
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = tint[i];
+      ctx.fillText(glyphs[i], x, y);
+    }
+    ctx.globalAlpha = 1;
   }
 
   // A moonlit scene behind Bob tucked into bed. Coords are in the 120x120 frame.
@@ -225,8 +305,8 @@
     confetti = confetti.filter((p) => p.y < (canvas.height || 120) + 6);
   }
 
-  function sizeCanvas(fw, fh) {
-    const s = (anims[current] && anims[current].scale) || scale;
+  function sizeCanvas(fw, fh, key) {
+    const s = (anims[key] && anims[key].scale) || scale;
     if (canvas.width !== fw) canvas.width = fw;
     if (canvas.height !== fh) canvas.height = fh;
     canvas.style.width = fw * s + "px";
@@ -331,6 +411,10 @@
       if (s.activity !== "building" && s.activity !== "celebrate") {
         buildAccum = 0;
       }
+      // Fresh board each time a new game begins.
+      if (s.activity === "playing") {
+        resetBoard();
+      }
       current = s.activity;
       frame = 0;
     }
@@ -338,8 +422,16 @@
     ageEl.textContent =
       s.ageDays > 0 ? `${s.ageDays} day${s.ageDays === 1 ? "" : "s"} old` : "";
 
-    // The burger button only appears while Bob is hungry.
+    // The burger button only appears while Bob is hungry; the invite and the
+    // board each own their own state.
     actionsEl.hidden = s.activity !== "hungry";
+    inviteEl.hidden = s.activity !== "wantsToPlay";
+    gameEl.hidden = s.activity !== "playing";
+    // The quick-play joystick is redundant once a game (or its invite) is up.
+    playNowEl.hidden =
+      s.activity === "playing" ||
+      s.activity === "wantsToPlay" ||
+      s.activity === "gone";
 
     // A scripted greeting or dad joke is holding the bubble; leave it be.
     if (Date.now() < speechLock) {
@@ -351,8 +443,13 @@
       speech.textContent = line;
       speech.hidden = false;
       clearTimeout(speechTimer);
-      // Keep the bubble up the whole time he's hungry (growl) or asleep (Zzz).
-      if (s.activity !== "hungry" && s.activity !== "sleeping") {
+      // Keep the bubble up while he's hungry (growl), asleep (Zzz), or waiting
+      // on an answer to his game invite.
+      const persistent =
+        s.activity === "hungry" ||
+        s.activity === "sleeping" ||
+        s.activity === "wantsToPlay";
+      if (!persistent) {
         speechTimer = setTimeout(() => (speech.hidden = true), 3200);
       }
     } else {
@@ -370,6 +467,152 @@
 
   document.getElementById("feed").addEventListener("click", () =>
     vscode.postMessage({ type: "feed" })
+  );
+
+  // Joystick shortcut: jump straight into a game from any state (no idle wait).
+  playNowEl.addEventListener("click", () =>
+    vscode.postMessage({ type: "acceptPlay" })
+  );
+
+  // ---- Tic-tac-toe mini-game (you are ❌, Bob is ⭕) ----
+  const tttEl = document.getElementById("ttt");
+  const tttStatus = document.getElementById("tttStatus");
+  const tttAgain = document.getElementById("tttAgain");
+  const tttDone = document.getElementById("tttDone");
+  const WIN_LINES = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8],
+    [0, 3, 6], [1, 4, 7], [2, 5, 8],
+    [0, 4, 8], [2, 4, 6],
+  ];
+  const GLYPH = { X: "✕", O: "◯" };
+  let board = ["", "", "", "", "", "", "", "", ""];
+  let gameOver = false;
+  let userTurn = true;
+  let bobTimer;
+
+  const cells = [];
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
+    cell.className = "ttt-cell";
+    cell.setAttribute("role", "gridcell");
+    cell.addEventListener("click", () => onCellClick(i));
+    tttEl.appendChild(cell);
+    cells.push(cell);
+  }
+
+  function resetBoard() {
+    clearTimeout(bobTimer);
+    danceUntil = 0;
+    board = ["", "", "", "", "", "", "", "", ""];
+    gameOver = false;
+    userTurn = true;
+    cells.forEach((c) => {
+      c.textContent = "";
+      c.classList.remove("taken", "win");
+    });
+    tttStatus.textContent = "your turn — you're ✕";
+    tttAgain.hidden = true;
+  }
+
+  function paint(i) {
+    cells[i].textContent = GLYPH[board[i]] || "";
+    cells[i].classList.toggle("taken", board[i] !== "");
+  }
+
+  function winningLine(b, p) {
+    return WIN_LINES.find((ln) => ln.every((k) => b[k] === p)) || null;
+  }
+
+  // Returns an empty cell that completes a line for player `p`, else null.
+  function findWinning(b, p) {
+    for (let i = 0; i < 9; i++) {
+      if (b[i] !== "") continue;
+      const copy = b.slice();
+      copy[i] = p;
+      if (winningLine(copy, p)) return i;
+    }
+    return null;
+  }
+
+  // Friendly: always take a win, usually block, otherwise wander a bit so the
+  // user can actually beat him.
+  function chooseBobMove(b) {
+    const win = findWinning(b, "O");
+    if (win !== null) return win;
+    const block = findWinning(b, "X");
+    if (block !== null && Math.random() < 0.7) return block;
+    const empties = [];
+    for (let i = 0; i < 9; i++) if (b[i] === "") empties.push(i);
+    if (b[4] === "" && Math.random() < 0.5) return 4;
+    return empties[(Math.random() * empties.length) | 0];
+  }
+
+  function onCellClick(i) {
+    if (gameOver || !userTurn || board[i] !== "") return;
+    board[i] = "X";
+    paint(i);
+    if (finishIfDone("X")) return;
+    userTurn = false;
+    tttStatus.textContent = "Bob's thinking…";
+    bobTimer = setTimeout(bobMove, 420);
+  }
+
+  function bobMove() {
+    if (gameOver) return;
+    const i = chooseBobMove(board);
+    if (i === undefined) {
+      finishIfDone("O");
+      return;
+    }
+    board[i] = "O";
+    paint(i);
+    if (finishIfDone("O")) return;
+    userTurn = true;
+    tttStatus.textContent = "your turn — you're ✕";
+  }
+
+  // Ends the game if `justMoved` won or the board filled. Returns true if over.
+  function finishIfDone(justMoved) {
+    const line = winningLine(board, justMoved);
+    if (line) {
+      line.forEach((k) => cells[k].classList.add("win"));
+      endGame(justMoved === "X" ? "win" : "lose");
+      return true;
+    }
+    if (board.every((v) => v !== "")) {
+      endGame("draw");
+      return true;
+    }
+    return false;
+  }
+
+  function endGame(outcome) {
+    gameOver = true;
+    userTurn = false;
+    tttStatus.textContent =
+      outcome === "win" ? "you win! 🎉" : outcome === "lose" ? "Bob wins! 🕺" : "draw! 🤝";
+    if (outcome === "win") {
+      // Player won: confetti + a good-sport cheer.
+      spawnConfetti();
+      showLockedSpeech("you beat me! Huzzah! 🎉", 4000);
+    } else if (outcome === "lose") {
+      // Bob won: a little victory dance.
+      danceUntil = performance.now() + 4500;
+      showLockedSpeech("I win! Let's boogie! 🕺", 4000);
+    }
+    tttAgain.hidden = false;
+    vscode.postMessage({ type: "playResult", outcome });
+  }
+
+  document.getElementById("playYes").addEventListener("click", () =>
+    vscode.postMessage({ type: "acceptPlay" })
+  );
+  document.getElementById("playNo").addEventListener("click", () =>
+    vscode.postMessage({ type: "declinePlay" })
+  );
+  tttAgain.addEventListener("click", resetBoard);
+  tttDone.addEventListener("click", () =>
+    vscode.postMessage({ type: "endPlay" })
   );
 
   requestAnimationFrame(loop);

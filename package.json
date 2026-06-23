@@ -2,7 +2,7 @@
   "name": "ibm-bob-tamagotchi",
   "displayName": "Bob-a-gotchi",
   "description": "A pixel-art robot companion who lives in your sidebar, codes along while you type, cheers when your AI ships a big block of code, gets hungry, and naps when you go idle.",
-  "version": "0.3.2",
+  "version": "0.3.4",
   "publisher": "nickcoma",
   "license": "MIT",
   "icon": "media/icon.png",
@@ -74,9 +74,15 @@
       "properties": {
         "bob.idleSleepMinutes": {
           "type": "number",
-          "default": 4,
+          "default": 6,
           "minimum": 1,
           "markdownDescription": "Minutes of no coding activity before Bob falls asleep."
+        },
+        "bob.playInviteMinutes": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "markdownDescription": "Minutes of idle before Bob may offer a game of tic-tac-toe. Should be less than `#bob.idleSleepMinutes#` so he asks before nodding off."
         },
         "bob.aiBlockLineThreshold": {
           "type": "number",
@@ -93,7 +99,13 @@
           "type": "number",
           "default": 30,
           "minimum": 5,
-          "markdownDescription": "How many minutes it takes for hunger/energy to drop one notch while idle."
+          "markdownDescription": "How many minutes it takes for energy to drop one notch while idle."
+        },
+        "bob.hungerMinutes": {
+          "type": "number",
+          "default": 30,
+          "minimum": 1,
+          "markdownDescription": "Minutes for a full belly to drain down to the point where Bob gets hungry and asks to be fed."
         }
       }
     }

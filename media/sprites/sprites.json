@@ -8,6 +8,7 @@
     "fed":       { "dir": "eating",    "frames": 9, "fps": 7 },
     "celebrate": { "dir": "celebrate", "frames": 9, "fps": 11 },
     "sleeping":  { "dir": "sleeping",  "frames": 1, "fps": 1, "scale": 2.1 },
+    "dancing":   { "dir": "dancing",   "frames": 8, "fps": 9 },
     "gone":      { "dir": "idle",      "frames": 1, "fps": 1 }
   }
 }

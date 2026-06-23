@@ -17,8 +17,10 @@ const CODING_STOP_MS = 1200;
 function readConfig(): PetConfig {
   const c = vscode.workspace.getConfiguration("bob");
   return {
-    idleSleepMinutes: c.get<number>("idleSleepMinutes", 4),
+    idleSleepMinutes: c.get<number>("idleSleepMinutes", 6),
+    playInviteMinutes: c.get<number>("playInviteMinutes", 3),
     statDecayMinutes: c.get<number>("statDecayMinutes", 30),
+    hungerMinutes: c.get<number>("hungerMinutes", 30),
     permadeath: c.get<boolean>("permadeath", false),
   };
 }
@@ -46,6 +48,18 @@ export function activate(context: vscode.ExtensionContext): void {
         break;
       case "reset":
         engine.reset(t);
+        break;
+      case "acceptPlay":
+        engine.startPlay(t);
+        break;
+      case "declinePlay":
+        engine.dismissPlay(t);
+        break;
+      case "playResult":
+        engine.registerPlayResult(msg.outcome, t);
+        break;
+      case "endPlay":
+        engine.endPlay(t);
         break;
     }
     if (msg.type !== "ready") {
